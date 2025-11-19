@@ -1,0 +1,19 @@
+{
+  "name": "alpha_controller",
+  "version": "1.0.0",
+  "description": "",
+  "main": "app.js",
+  "scripts": {
+    "test": "app -test"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/omegakid66/alpha_controller.git"
+  },
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/omegakid66/alpha_controller/issues"
+  },
+  "homepage": "https://github.com/omegakid66/alpha_controller#readme"
+}

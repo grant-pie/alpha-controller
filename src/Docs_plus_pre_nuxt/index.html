@@ -1,0 +1,67 @@
+
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+        <title>Hello World Simple App</title>
+    </head>
+    <body>
+        <div>Hello World!</div>
+    </body>
+</html>
+<!--
+
+
+  <div id="app">
+            <p id="sysExMessageValuesReceived"></p>
+            <div class="selectorMidiDevices d-flex flex-column align-items-center border col-6 mx-auto">
+                <h1>Select Midi Devices:</h1>
+
+                <button v-on:click="" class="btn btn-secondary">increase step</button>
+
+                <div class="dropdown ">
+                    <button class="btn btn-secondary dropdown-toggle" type="button" id="dropdownMenuButtonMidiInputDevices" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                        {{ selectedMidiInputDevice.name }}
+                    </button>
+
+                    <div class="dropdown-menu" aria-labelledby="dropdownMenuButton">
+                        <p v-bind:id="inputDevice.name + '_input_option'"  class="dropdown-item" v-for="inputDevice in midiInputDevices" :key="inputDevice.id"  v-on:click="selectMidiInputDevice( inputDevice)"> {{ inputDevice.name }}</p>
+                    </div>
+                </div>
+
+                <div class="dropdown mt-4">
+                    <button class="btn btn-secondary dropdown-toggle" type="button" id="dropdownMenuButtonMidiOutputDevices" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                      {{ selectedMidiOutputDevice.name }}
+                    </button>
+
+                    <div class="dropdown-menu" aria-labelledby="dropdownMenuButton">
+                        <p v-bind:id="outputDevice.name + '_output_option'" class="dropdown-item" v-for="outputDevice in midiOutputDevices" :key="outputDevice.id" v-on:click="selectMidiOutputDevice( outputDevice)"> {{ outputDevice.name }}</p>
+                    </div>
+                </div>
+
+
+            </div>
+
+        </div>
+
+        //development version, includes helpful console warnings
+        <script src="https://cdn.jsdelivr.net/npm/vue@2/dist/vue.js"></script>
+
+
+
+
+                <script src="MIDIInterface.js" async defer></script>
+        <script src="MIDIRouter.js" async defer></script>
+        <script src="Models/SysExMessage.js" async defer></script>
+        <script src="Models/HardwareInterface.js" async defer></script>
+        <script src="Models/OhmRGB.js" async defer></script>
+        <script src="Models/DigitalInput.js" async defer></script>
+        <script src="Models/DigitalOutput.js" async defer></script>
+        <script src="Models/AnalogInput.js" async defer></script>
+        <script src="Controllers/Controller.js" async defer></script>
+        <script src="Controllers/AlphaSynth.js" async defer></script>
+
+   <script src="app.js" async defer></script>
+-->
