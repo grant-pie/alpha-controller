@@ -471,72 +471,72 @@ class MultiController extends Controller {
     }
 
     showScale(root, pattern){
-        console.log(root);
+        console.log('showScale called with root:', root);
+        
         //hide previous scales
         this.hideScales();
 
-        //get min value
-        let minOctaves = this.MIDIToNote(this.hardwareInterface.digital_inputs_table[63].MIDI_value).octave;
-        let maxOctaves = this.MIDIToNote(this.hardwareInterface.digital_inputs_table[0].MIDI_value).octave + 1;
-
-        //get sorted inputs TODO: Put in seperate function
-        let sortedInputs= [];
-
-        //get inputs in octave
-        for(let i = minOctaves; i <= maxOctaves; i++){
-
-            let inputsInOctave =  this.getInputsByOctave(i);
-
-            //remove last 4 inputs of the last octave
-            if(i === maxOctaves ){
-                inputsInOctave =  inputsInOctave.slice(0, 4);
-            }
-
-            //sort octave by notes
-            let octaveSorted = this.sortInputsByNoteNumbers(inputsInOctave);
-
-            //append to sorted inputs
-            sortedInputs = [...sortedInputs, ...octaveSorted];
-
-            //get note values TODO: Only for development
-            for(let i = 0 ; i <= sortedInputs.length - 1; i++){
-                sortedInputs[i].note = this.MIDIToNote(sortedInputs[i].MIDI_value);
-                sortedInputs[i].key = i;
-            }
-
+        // Get all grid buttons and sort them by MIDI value (chromatic order)
+        const gridButtons = this.hardwareInterface.getDigitalInputsByGroup('grid');
+        
+        // Sort all grid buttons by MIDI value to create chromatic sequence
+        const sortedInputs = gridButtons.sort((a, b) => a.MIDI_value - b.MIDI_value);
+        
+        // Assign key property (position in chromatic sequence)
+        for(let i = 0; i < sortedInputs.length; i++){
+            sortedInputs[i].note = this.MIDIToNote(sortedInputs[i].MIDI_value);
+            sortedInputs[i].key = i;
         }
 
-        //get root input in sorted inputs
-        const rootInput = this.findDigitalInputById(sortedInputs, root.id)
-        console.log({
-            'rootInput' :  this.MIDIToNote(rootInput.MIDI_value).note + ' ' + this.MIDIToNote(rootInput.MIDI_value).octave,
+        console.log('sortedInputs:', sortedInputs.map(s => ({
+            id: s.id, 
+            midi: s.MIDI_value, 
+            note: s.note.note + s.note.octave,
+            key: s.key
+        })));
+
+        // Find root input in sorted inputs
+        const rootInput = sortedInputs.find(input => input.id === root.id);
+        
+        if(!rootInput) {
+            console.error('Root button not found in sorted inputs!');
+            console.error('Looking for ID:', root.id);
+            return;
+        }
+        
+        console.log('rootInput:', {
+            id: rootInput.id,
+            midi: rootInput.MIDI_value,
+            note: this.MIDIToNote(rootInput.MIDI_value).note + ' ' + this.MIDIToNote(rootInput.MIDI_value).octave,
+            key: rootInput.key
         });
 
-        //switch on leds
+        // Light up root
+        this.hardwareInterface.getDigitalOutputById(root.id).g.value = 1;
+        this.hardwareInterface.getDigitalOutputById(root.id).g.defaultValue = 1;
+
+        // Light up scale notes
         let currentKey = rootInput.key;
-        for(let i = 0; i <= pattern.length - 1 ; i++){
-
+        console.log('Scale pattern:', pattern);
+        
+        for(let i = 0; i < pattern.length; i++){
             currentKey = currentKey + pattern[i];
+            
+            console.log(`Step ${i}: pattern[${i}]=${pattern[i]}, currentKey=${currentKey}`);
 
-            if(sortedInputs[ currentKey ] != undefined){
-
-                this.hardwareInterface.getDigitalOutputById( sortedInputs[ currentKey ].id ).g.value = 1;
-                this.hardwareInterface.getDigitalOutputById( sortedInputs[ currentKey ].id ).g.defaultValue = 1;
-
+            if(sortedInputs[currentKey] != undefined){
+                console.log(`  Lighting up: id=${sortedInputs[currentKey].id}, midi=${sortedInputs[currentKey].MIDI_value}, note=${sortedInputs[currentKey].note.note}${sortedInputs[currentKey].note.octave}`);
+                
+                this.hardwareInterface.getDigitalOutputById(sortedInputs[currentKey].id).g.value = 1;
+                this.hardwareInterface.getDigitalOutputById(sortedInputs[currentKey].id).g.defaultValue = 1;
+            } else {
+                console.log(`  Out of range, skipping`);
             }
-
-
-
         }
 
-        this.hardwareInterface.getDigitalOutputById( root.id ).g.value = 1;
-        this.hardwareInterface.getDigitalOutputById( root.id ).g.defaultValue = 1;
-
-        const sysExMessage =  this.hardwareInterface.getLEDsSysExMessage();
-
+        const sysExMessage = this.hardwareInterface.getLEDsSysExMessage();
         this.midiInterface.outputDevice.send(sysExMessage.sysExMessage);
     }
-
     hideScales(){
         const gridLeds = this.hardwareInterface.getDigitalOutputsByGroup('grid');
 
@@ -563,7 +563,7 @@ class MultiController extends Controller {
     }
 
     findDigitalInputById(inputs, id) {
-        let result = this.hardwareInterface.digital_inputs_table.filter(obj => {
+        let result = inputs.filter(obj => {  // Use the inputs parameter!
             return obj.id === id
         })
 
