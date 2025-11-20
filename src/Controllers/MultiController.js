@@ -111,6 +111,12 @@ class MultiController extends Controller {
                 ohmRGB.digital_inputs_table[i].is_CC = 1;
 
             }
+            //set function bts
+            // Set function btns to CC mode
+            // Function buttons are indices 74-80
+            for(let i = 74; i <= 80; i++) {
+                ohmRGB.digital_inputs_table[i].is_CC = 1;
+            }
 
             let sysExMessage = ohmRGB.getButtonMIDIValuesSysExMessage();
 
