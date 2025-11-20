@@ -77,16 +77,15 @@ class MultiController extends Controller {
             ohmRGB.digital_inputs_table[65].MIDI_value = 105;
             ohmRGB.digital_inputs_table[65].is_CC = 1;
 
-            //flip grid btns so that high notes is at top
-
+            //set grid btns midi vals
             let rowBottom = 7;
             let column = 0;
             let val1;
 
             for(let i = 0; i <= 31; i ++){
                 val1 = hardwareInterface.digital_inputs_table[i].MIDI_value;
-                hardwareInterface.digital_inputs_table[i].MIDI_value = hardwareInterface.digital_inputs_table[rowBottom * 8 + column].MIDI_value;
-                hardwareInterface.digital_inputs_table[rowBottom * 8 + column].MIDI_value = val1;
+                hardwareInterface.digital_inputs_table[i].MIDI_value = hardwareInterface.digital_inputs_table[rowBottom + column].MIDI_value;
+                hardwareInterface.digital_inputs_table[rowBottom + column].MIDI_value = val1;
 
                 column++;
                 if(column > 7){
