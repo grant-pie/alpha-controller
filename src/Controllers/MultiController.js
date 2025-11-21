@@ -77,21 +77,16 @@ class MultiController extends Controller {
             ohmRGB.digital_inputs_table[65].MIDI_value = 105;
             ohmRGB.digital_inputs_table[65].is_CC = 1;
 
-            //set grid btns midi vals
-            let rowBottom = 7;
-            let column = 0;
-            let val1;
+            // Set grid buttons to simple chromatic layout
+            // Bottom-left = lowest note, goes up chromatically left-to-right, bottom-to-top
+            let startingNote = 36; // C2 - adjust this to your preferred starting octave
 
-            for(let i = 0; i <= 31; i ++){
-                val1 = hardwareInterface.digital_inputs_table[i].MIDI_value;
-                hardwareInterface.digital_inputs_table[i].MIDI_value = hardwareInterface.digital_inputs_table[rowBottom + column].MIDI_value;
-                hardwareInterface.digital_inputs_table[rowBottom + column].MIDI_value = val1;
-
-                column++;
-                if(column > 7){
-                    column = 0;
-
-                    rowBottom--;
+            for(let row = 7; row >= 0; row--) {        // Start from bottom row
+                for(let col = 0; col < 8; col++) {     // Left to right
+                    let buttonIndex = col * 8 + row;   // Calculate button index based on physical layout
+                    ohmRGB.digital_inputs_table[buttonIndex].MIDI_value = startingNote;
+                    ohmRGB.digital_inputs_table[buttonIndex].is_CC = 0; // Notes, not CC
+                    startingNote++;
                 }
             }
 
