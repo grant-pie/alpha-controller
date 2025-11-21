@@ -466,72 +466,57 @@ class MultiController extends Controller {
     }
 
     showScale(root, pattern){
-        console.log('showScale called with root:', root);
-        
-        //hide previous scales
-        this.hideScales();
+    console.log('showScale called with root:', root);
+    
+    //hide previous scales
+    this.hideScales();
 
-        // Get all grid buttons and sort them by MIDI value (chromatic order)
-        const gridButtons = this.hardwareInterface.getDigitalInputsByGroup('grid');
-        
-        // Sort all grid buttons by MIDI value to create chromatic sequence
-        const sortedInputs = gridButtons.sort((a, b) => a.MIDI_value - b.MIDI_value);
-        
-        // Assign key property (position in chromatic sequence)
-        for(let i = 0; i < sortedInputs.length; i++){
-            sortedInputs[i].note = this.MIDIToNote(sortedInputs[i].MIDI_value);
-            sortedInputs[i].key = i;
-        }
+    // Get all grid buttons
+    const gridButtons = this.hardwareInterface.getDigitalInputsByGroup('grid');
+    
+    // Create a map of MIDI values to button IDs for quick lookup
+    const midiToButtonMap = {};
+    gridButtons.forEach(btn => {
+        midiToButtonMap[btn.MIDI_value] = btn;
+    });
+    
+    console.log('Available MIDI notes:', Object.keys(midiToButtonMap).sort((a, b) => a - b));
 
-        console.log('sortedInputs:', sortedInputs.map(s => ({
-            id: s.id, 
-            midi: s.MIDI_value, 
-            note: s.note.note + s.note.octave,
-            key: s.key
-        })));
+    // Get root MIDI value
+    const rootMidiValue = root.MIDI_value;
+    console.log('Root MIDI value:', rootMidiValue, 
+                'Note:', this.MIDIToNote(rootMidiValue).note + this.MIDIToNote(rootMidiValue).octave);
 
-        // Find root input in sorted inputs
-        const rootInput = sortedInputs.find(input => input.id === root.id);
-        
-        if(!rootInput) {
-            console.error('Root button not found in sorted inputs!');
-            console.error('Looking for ID:', root.id);
-            return;
-        }
-        
-        console.log('rootInput:', {
-            id: rootInput.id,
-            midi: rootInput.MIDI_value,
-            note: this.MIDIToNote(rootInput.MIDI_value).note + ' ' + this.MIDIToNote(rootInput.MIDI_value).octave,
-            key: rootInput.key
-        });
+    // Light up root
+    this.hardwareInterface.getDigitalOutputById(root.id).g.value = 1;
+    this.hardwareInterface.getDigitalOutputById(root.id).g.defaultValue = 1;
 
-        // Light up root
-        this.hardwareInterface.getDigitalOutputById(root.id).g.value = 1;
-        this.hardwareInterface.getDigitalOutputById(root.id).g.defaultValue = 1;
-
-        // Light up scale notes
-        let currentKey = rootInput.key;
-        console.log('Scale pattern:', pattern);
+    // Calculate and light up scale notes
+    let currentMidiValue = rootMidiValue;
+    console.log('Scale pattern:', pattern);
+    
+    for(let i = 0; i < pattern.length; i++){
+        currentMidiValue = currentMidiValue + pattern[i];
         
-        for(let i = 0; i < pattern.length; i++){
-            currentKey = currentKey + pattern[i];
+        console.log(`Step ${i}: pattern[${i}]=${pattern[i]}, currentMidiValue=${currentMidiValue}`);
+
+        // Check if this MIDI note exists on the grid
+        if(midiToButtonMap[currentMidiValue] != undefined){
+            const button = midiToButtonMap[currentMidiValue];
+            const note = this.MIDIToNote(currentMidiValue);
             
-            console.log(`Step ${i}: pattern[${i}]=${pattern[i]}, currentKey=${currentKey}`);
-
-            if(sortedInputs[currentKey] != undefined){
-                console.log(`  Lighting up: id=${sortedInputs[currentKey].id}, midi=${sortedInputs[currentKey].MIDI_value}, note=${sortedInputs[currentKey].note.note}${sortedInputs[currentKey].note.octave}`);
-                
-                this.hardwareInterface.getDigitalOutputById(sortedInputs[currentKey].id).g.value = 1;
-                this.hardwareInterface.getDigitalOutputById(sortedInputs[currentKey].id).g.defaultValue = 1;
-            } else {
-                console.log(`  Out of range, skipping`);
-            }
+            console.log(`  Lighting up: id=${button.id}, midi=${currentMidiValue}, note=${note.note}${note.octave}`);
+            
+            this.hardwareInterface.getDigitalOutputById(button.id).g.value = 1;
+            this.hardwareInterface.getDigitalOutputById(button.id).g.defaultValue = 1;
+        } else {
+            console.log(`  MIDI note ${currentMidiValue} not available on grid`);
         }
-
-        const sysExMessage = this.hardwareInterface.getLEDsSysExMessage();
-        this.midiInterface.outputDevice.send(sysExMessage.sysExMessage);
     }
+
+    const sysExMessage = this.hardwareInterface.getLEDsSysExMessage();
+    this.midiInterface.outputDevice.send(sysExMessage.sysExMessage);
+}
     hideScales(){
         const gridLeds = this.hardwareInterface.getDigitalOutputsByGroup('grid');
 
