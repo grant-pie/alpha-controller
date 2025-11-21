@@ -352,7 +352,7 @@ export default {
 
             if(direction){
 
-                if(this.transposeAmount < 5){
+                if(this.transposeAmount < 2){
                     this.transposeAmount++;
 
                     this.controller.transpose(1);
@@ -372,7 +372,7 @@ export default {
 
             } else {
 
-                if(this.transposeAmount > 0){
+                if(this.transposeAmount > -3){
                     this.transposeAmount--;
 
                     this.controller.transpose(0);
