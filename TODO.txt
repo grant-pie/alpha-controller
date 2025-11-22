@@ -1,1 +1,2 @@
 rename components/controllers to layouts
+make layouts resonsive
