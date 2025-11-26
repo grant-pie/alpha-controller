@@ -238,7 +238,32 @@
 
             </div>
 
-                        <div
+            <div
+            class="container-controls mt-5 pb-5"
+            >
+
+                <div
+                class="container-controls mx-4 pa-1"
+                >
+                    <p class="pa-0 ma-0 text-h5 text-center"
+                    v-text="note"
+                    ></p>
+                </div>
+
+                <div class="mt-4">
+
+                    <p
+                    v-for="(note, index) in noteHistory"
+                    :key="index"
+                    v-text="note"
+                    class="pa-0 ma-0 text-h7"
+                    ></p>
+
+                </div>
+
+            </div>
+
+            <div
             class="container-controls mt-5"
             >
                 <v-row class="mb-2">
@@ -256,17 +281,19 @@
                         type="number"
                         density="compact"
                         hide-details
+                        @change="updateTempo"
                         ></v-text-field>
                     </v-col>
                     <v-col cols="6">
-                        <v-text-field
-                        v-model.number="loopLength"
-                        label="Length"
-                        suffix="bars"
-                        type="number"
+                        <v-select
+                        v-model="quantizeGrid"
+                        :items="quantizeOptions"
+                        item-title="label"
+                        item-value="value"
+                        label="Quantize"
                         density="compact"
                         hide-details
-                        ></v-text-field>
+                        ></v-select>
                     </v-col>
                 </v-row>
 
@@ -342,33 +369,6 @@
 
             </div>
 
-            <div
-            class="container-controls mt-5 pb-5"
-            >
-
-                <div
-                class="container-controls mx-4 pa-1"
-                >
-                    <p class="pa-0 ma-0 text-h5 text-center"
-                    v-text="note"
-                    ></p>
-                </div>
-
-                <div class="mt-4">
-
-                    <p
-                    v-for="(note, index) in noteHistory"
-                    :key="index"
-                    v-text="note"
-                    class="pa-0 ma-0 text-h7"
-                    ></p>
-
-                </div>
-
-            </div>
-
-
-
         </div>
 
     </div>
@@ -425,7 +425,15 @@ export default {
             isRecording: false,
             isPlaying: false,
             loopEnabled: true,
-            recordedEventsCount: 0
+            recordedEventsCount: 0,
+            quantizeGrid: '1/16',
+            quantizeOptions: [
+                { label: 'Off', value: 'off' },
+                { label: '1/4 Note', value: '1/4' },
+                { label: '1/8 Note', value: '1/8' },
+                { label: '1/16 Note', value: '1/16' },
+                { label: '1/32 Note', value: '1/32' },
+            ]
         }
     },
 
@@ -648,6 +656,11 @@ export default {
         },
 
         // Sequencer methods
+        updateTempo() {
+            console.log('Update tempo to:', this.tempo);
+            this.controller.sequencer.setTempo(this.tempo);
+        },
+
         startRecording() {
             console.log('Start recording');
             this.isRecording = true;
@@ -664,6 +677,13 @@ export default {
 
         stopSequencer() {
             console.log('Stop sequencer');
+            
+            // If we were recording, apply quantization before stopping
+            if (this.isRecording && this.quantizeGrid !== 'off') {
+                console.log('Applying quantization:', this.quantizeGrid);
+                this.controller.sequencer.quantizeRecording(this.quantizeGrid, this.tempo);
+            }
+            
             this.isRecording = false;
             this.isPlaying = false;
             
