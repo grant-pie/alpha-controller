@@ -534,7 +534,36 @@ class MultiController extends Controller {
         this.midiInterface.outputDevice.send(sysExMessage.sysExMessage);
     }
 
-    // Add these methods after your hideScales() method in MultiController.js
+      showScaleByType(root, scaleType) {
+        console.log('showScaleByType called with root:', root, 'scaleType:', scaleType);
+        
+        // Define scale patterns (intervals in semitones)
+        const scalePatterns = {
+            'major': [2, 2, 1, 2, 2, 2, 1],              // Ionian
+            'minor': [2, 1, 2, 2, 1, 2, 2],              // Aeolian (Natural Minor)
+            'dorian': [2, 1, 2, 2, 2, 1, 2],             // Dorian mode
+            'phrygian': [1, 2, 2, 2, 1, 2, 2],           // Phrygian mode
+            'lydian': [2, 2, 2, 1, 2, 2, 1],             // Lydian mode
+            'mixolydian': [2, 2, 1, 2, 2, 1, 2],         // Mixolydian mode
+            'locrian': [1, 2, 2, 1, 2, 2, 2],            // Locrian mode
+            'harmonicMinor': [2, 1, 2, 2, 1, 3, 1],      // Harmonic Minor
+            'melodicMinor': [2, 1, 2, 2, 2, 2, 1],       // Melodic Minor (ascending)
+            'pentatonicMajor': [2, 2, 3, 2, 3],          // Major Pentatonic
+            'pentatonicMinor': [3, 2, 2, 3, 2],          // Minor Pentatonic
+            'blues': [3, 2, 1, 1, 3, 2]                  // Blues scale
+        };
+
+        // Get the pattern for the selected scale type
+        const pattern = scalePatterns[scaleType];
+        if (!pattern) {
+            console.error('Unknown scale type:', scaleType);
+            return;
+        }
+
+        // Use the existing showScale method with the pattern
+        this.showScale(root, pattern);
+    }
+
 
     showChord(root, chordType) {
         console.log('showChord called with root:', root, 'chordType:', chordType);

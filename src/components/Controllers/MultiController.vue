@@ -48,39 +48,35 @@
             class="container-controls mt-5"
             >
                 <v-row>
-
-                    <v-btn
-                    @click="showMajorScale"
-                    block
-                    :disabled="selected === null ? true : false"
-                    >
-                        Major Scale
-                    </v-btn>
-
+                    <v-select
+                    v-model="selectedScaleType"
+                    :items="scaleTypes"
+                    item-title="label"
+                    item-value="value"
+                    label="Scale Type"
+                    density="compact"
+                    :disabled="selected === null"
+                    ></v-select>
                 </v-row>
 
-                <v-row class="mt-5 mb-1">
-
+                <v-row class="mt-2">
                     <v-btn
-                    @click="showMinorScale"
+                    @click="showScale"
                     block
-                    :disabled="selected === null ? true : false"
+                    :disabled="selected === null || selectedScaleType === null"
                     >
-                        Minor Scale
+                        Show Scale
                     </v-btn>
-
                 </v-row>
 
-                <v-row class="mt-5 mb-1">
-
+                <v-row class="mt-2 mb-1">
                     <v-btn
                     @click="hideScale"
                     block
-                    :disabled="selected === null ? true : false"
+                    :disabled="selected === null"
                     >
-                        Hide  Scale
+                        Hide Scale
                     </v-btn>
-
                 </v-row>
 
             </div>
@@ -283,8 +279,7 @@ export default {
             labels: 'none',
             showOctaves : false,
             showBlackKeys : false,
-            showMajorScaleActive: false,
-            showMinorScaleActive: false,
+            showScaleActive: false,
             showChordActive: false,
             scaleRoot: null,
             transposeAmount: 0,
@@ -302,6 +297,21 @@ export default {
                 { label: 'Dominant 7th', value: 'dominant7' },
                 { label: 'Sus2', value: 'sus2' },
                 { label: 'Sus4', value: 'sus4' },
+            ],
+            selectedScaleType: null,
+            scaleTypes: [
+                { label: 'Major (Ionian)', value: 'major' },
+                { label: 'Minor (Aeolian)', value: 'minor' },
+                { label: 'Dorian', value: 'dorian' },
+                { label: 'Phrygian', value: 'phrygian' },
+                { label: 'Lydian', value: 'lydian' },
+                { label: 'Mixolydian', value: 'mixolydian' },
+                { label: 'Locrian', value: 'locrian' },
+                { label: 'Harmonic Minor', value: 'harmonicMinor' },
+                { label: 'Melodic Minor', value: 'melodicMinor' },
+                { label: 'Pentatonic Major', value: 'pentatonicMajor' },
+                { label: 'Pentatonic Minor', value: 'pentatonicMinor' },
+                { label: 'Blues', value: 'blues' },
             ]
         }
     },
@@ -341,7 +351,7 @@ export default {
 
             if(this.showMiddleC){
 
-                if(this.showMajorScaleActive || this.showMinorScaleActive || this.showChordActive){
+                if(this.showScaleActive || this.showChordActive){
                     this.hideScale();
                     this.hideChord();
                 }
@@ -354,7 +364,7 @@ export default {
 
         showOctaves(){
             if(this.showOctaves){
-                if(this.showMajorScaleActive || this.showMinorScaleActive || this.showChordActive){
+                if(this.showScaleActive || this.showChordActive){
                     this.hideScale();
                     this.hideChord();
                 }
@@ -368,7 +378,7 @@ export default {
         showBlackKeys(){
 
             if(this.showBlackKeys){
-                if(this.showMajorScaleActive || this.showMinorScaleActive || this.showChordActive){
+                if(this.showScaleActive || this.showChordActive){
                     this.hideScale();
                     this.hideChord();
                 }
@@ -392,8 +402,8 @@ export default {
         transpose(direction){
             let refreshNotes = false;
 
-            if(this.showMajorScaleActive || this.showMinorScaleActive){
-                this.hideScales
+            if(this.showScaleActive){
+                this.hideScale();
             }
 
             if(this.showChordActive){
@@ -453,16 +463,12 @@ export default {
 
             }
 
-            if(this.showMajorScaleActive){
-                this.showMajorScale()
-            }
-
-            if(this.showMinorScaleActive){
-                this.showMinorScale()
+            if(this.showScaleActive){
+                this.showScale();
             }
 
             if(this.showChordActive){
-                this.showChord()
+                this.showChord();
             }
 
 
@@ -482,7 +488,7 @@ export default {
                this.showBlackKeys = false;
             }
 
-            if(this.showMajorScaleActive || this.showMinorScaleActive){
+            if(this.showScaleActive){
                 this.hideScale();
             }
 
@@ -495,8 +501,8 @@ export default {
             this.controller.hideChord();
         },
 
-        showMajorScale(){
-            //TODO: Alot of confusing switching on and off needs fix
+        showScale(){
+            // Turn off other visualizations
             if(this.showMiddleC){
                 this.showMiddleC = false;
             }
@@ -513,35 +519,12 @@ export default {
                 this.hideChord();
             }
 
-            this.showMajorScaleActive = true;
-            this.controller.showMajorScale(this.selected);
-
-        },
-
-        showMinorScale(){
-            if(this.showMiddleC){
-                this.showMiddleC = false;
-            }
-
-            if(this.showOctaves){
-               this.showOctaves = false;
-            }
-
-            if(this.showBlackKeys){
-               this.showBlackKeys = false;
-            }
-
-            if(this.showChordActive){
-                this.hideChord();
-            }
-
-            this.showMinorScaleActive = true;
-            this.controller.showMinorScale(this.selected);
+            this.showScaleActive = true;
+            this.controller.showScaleByType(this.selected, this.selectedScaleType);
         },
 
         hideScale(){
-            this.showMajorScaleActive = false;
-            this.showMinorScaleActive = false;
+            this.showScaleActive = false;
             this.controller.hideScales();
         },
     },
