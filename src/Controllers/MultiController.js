@@ -13,12 +13,14 @@ import { DigitalInput } from '../Models/DigitalInput.js';
 import { DigitalOutput } from '../Models/DigitalOutput.js';
 import { MIDISequencer } from '../Models/MIDISequencer.js';
 import { Arpeggiator } from '../Models/Arpeggiator.js';
+import { ChordGenerator } from '../Models/ChordGenerator.js';
 
 class MultiController extends Controller {
     constructor(hardwareInterface, midiInterface){
         super(hardwareInterface, midiInterface);
         this.sequencer = new MIDISequencer(midiInterface, 120);
         this.arpeggiator = new Arpeggiator(midiInterface, 120);
+        this.chordGenerator = new ChordGenerator(midiInterface);
         this.state = this.initiate();
     }
 
@@ -201,14 +203,22 @@ class MultiController extends Controller {
         const digitalOutputId = DigitalOutput.findDigitalOutputByDigitalInputId(ohmRGB.digital_outputs_table, btn.id);
         const digitalOutput = ohmRGB.digital_outputs_table[digitalOutputId];
 
-        // Route to arpeggiator if active (ADD THIS BLOCK)
-        if (controller.arpeggiator.isActive) {
+        // Route to chord generator if active (ADD THIS BLOCK)
+        if (controller.chordGenerator.isActive) {
+            if (velocityReceived > 0) {
+                controller.chordGenerator.playChord(midiValReceived, velocityReceived);
+            } else {
+                controller.chordGenerator.stopChord(midiValReceived);
+            }
+            // Continue to handle other features below
+        }
+        // Route to arpeggiator if active
+        else if (controller.arpeggiator.isActive) {
             if (velocityReceived > 0) {
                 controller.arpeggiator.addNote(midiValReceived);
             } else {
                 controller.arpeggiator.removeNote(midiValReceived);
             }
-            // Don't return - still update LEDs below
         }
 
         // Record if sequencer is recording

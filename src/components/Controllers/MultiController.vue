@@ -49,6 +49,78 @@
             >
                 <v-row class="mb-2">
                     <v-col cols="12">
+                        <p class="text-center font-weight-bold mb-0">CHORD GENERATOR</p>
+                    </v-col>
+                </v-row>
+
+                <v-row class="mb-3">
+                    <v-col cols="6">
+                        <v-select
+                        v-model="chordType"
+                        :items="chordTypeOptions"
+                        item-title="label"
+                        item-value="value"
+                        label="Type"
+                        density="compact"
+                        hide-details
+                        ></v-select>
+                    </v-col>
+                    <v-col cols="6">
+                        <v-select
+                        v-model="chordVoicing"
+                        :items="chordVoicingOptions"
+                        item-title="label"
+                        item-value="value"
+                        label="Voicing"
+                        density="compact"
+                        hide-details
+                        ></v-select>
+                    </v-col>
+                </v-row>
+
+                <v-row class="mb-3">
+                    <v-col cols="12">
+                        <v-slider
+                        v-model="chordVelocity"
+                        label="Velocity"
+                        min="1"
+                        max="127"
+                        step="1"
+                        thumb-label
+                        density="compact"
+                        hide-details
+                        ></v-slider>
+                    </v-col>
+                </v-row>
+
+                <v-row class="mb-2">
+                    <v-col cols="12">
+                        <v-btn
+                        @click="toggleChordGenerator"
+                        block
+                        :color="chordGenActive ? 'primary' : ''"
+                        >
+                            <v-icon>{{ chordGenActive ? 'mdi-stop' : 'mdi-play' }}</v-icon>
+                            {{ chordGenActive ? 'CHORD ON' : 'CHORD OFF' }}
+                        </v-btn>
+                    </v-col>
+                </v-row>
+
+                <v-row class="mb-1">
+                    <v-col cols="12">
+                        <div class="sequencer-status">
+                            <p class="text-caption ma-0">Active Notes: {{ chordActiveNotes }}</p>
+                        </div>
+                    </v-col>
+                </v-row>
+
+            </div>
+
+            <div
+            class="container-controls mt-5"
+            >
+                <v-row class="mb-2">
+                    <v-col cols="12">
                         <p class="text-center font-weight-bold mb-0">ARPEGGIATOR</p>
                     </v-col>
                 </v-row>
@@ -539,7 +611,36 @@ export default {
             ],
             arpOctaves: 1,
             arpGateLength: 80,
-            arpHeldNotes: 0
+            arpHeldNotes: 0,
+            // Chord Generator data
+            chordGenActive: false,
+            chordType: 'major',
+            chordTypeOptions: [
+                { label: 'Major', value: 'major' },
+                { label: 'Minor', value: 'minor' },
+                { label: 'Diminished', value: 'diminished' },
+                { label: 'Augmented', value: 'augmented' },
+                { label: 'Major 7th', value: 'major7' },
+                { label: 'Minor 7th', value: 'minor7' },
+                { label: 'Dominant 7th', value: 'dominant7' },
+                { label: 'Sus2', value: 'sus2' },
+                { label: 'Sus4', value: 'sus4' },
+                { label: 'Major 6th', value: 'major6' },
+                { label: 'Minor 6th', value: 'minor6' },
+                { label: 'Diminished 7th', value: 'dim7' },
+                { label: 'Half Diminished', value: 'halfDim7' },
+            ],
+            chordVoicing: 'root',
+            chordVoicingOptions: [
+                { label: 'Root Position', value: 'root' },
+                { label: '1st Inversion', value: 'first' },
+                { label: '2nd Inversion', value: 'second' },
+                { label: '3rd Inversion', value: 'third' },
+                { label: 'Drop 2', value: 'drop2' },
+                { label: 'Drop 3', value: 'drop3' },
+            ],
+            chordVelocity: 100,
+            chordActiveNotes: 0
         }
     },
 
@@ -837,6 +938,28 @@ export default {
 
         updateArpHeldNotes(count) {
             this.arpHeldNotes = count;
+        },
+
+        // Chord Generator methods
+        toggleChordGenerator() {
+            this.chordGenActive = !this.chordGenActive;
+            
+            if (this.chordGenActive) {
+                console.log('Chord Generator ON');
+                this.controller.chordGenerator.start({
+                    type: this.chordType,
+                    voicing: this.chordVoicing,
+                    velocity: this.chordVelocity
+                });
+            } else {
+                console.log('Chord Generator OFF');
+                this.controller.chordGenerator.stop();
+                this.chordActiveNotes = 0;
+            }
+        },
+
+        updateChordActiveNotes(count) {
+            this.chordActiveNotes = count;
         }
     },
 
@@ -868,6 +991,24 @@ export default {
         tempo(newTempo) {
             if (this.arpActive) {
                 this.controller.arpeggiator.setRate(this.arpRate, newTempo);
+            }
+        },
+
+        chordType(newType) {
+            if (this.chordGenActive) {
+                this.controller.chordGenerator.setChordType(newType);
+            }
+        },
+
+        chordVoicing(newVoicing) {
+            if (this.chordGenActive) {
+                this.controller.chordGenerator.setVoicing(newVoicing);
+            }
+        },
+
+        chordVelocity(newVelocity) {
+            if (this.chordGenActive) {
+                this.controller.chordGenerator.setVelocity(newVelocity);
             }
         }
     },
