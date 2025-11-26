@@ -47,6 +47,89 @@
             <div
             class="container-controls mt-5"
             >
+                <v-row class="mb-2">
+                    <v-col cols="12">
+                        <p class="text-center font-weight-bold mb-0">ARPEGGIATOR</p>
+                    </v-col>
+                </v-row>
+
+                <v-row class="mb-3">
+                    <v-col cols="6">
+                        <v-select
+                        v-model="arpMode"
+                        :items="arpModeOptions"
+                        item-title="label"
+                        item-value="value"
+                        label="Mode"
+                        density="compact"
+                        hide-details
+                        ></v-select>
+                    </v-col>
+                    <v-col cols="6">
+                        <v-select
+                        v-model="arpRate"
+                        :items="arpRateOptions"
+                        item-title="label"
+                        item-value="value"
+                        label="Rate"
+                        density="compact"
+                        hide-details
+                        ></v-select>
+                    </v-col>
+                </v-row>
+
+                <v-row class="mb-3">
+                    <v-col cols="6">
+                        <v-text-field
+                        v-model.number="arpOctaves"
+                        label="Octaves"
+                        type="number"
+                        min="1"
+                        max="4"
+                        density="compact"
+                        hide-details
+                        ></v-text-field>
+                    </v-col>
+                    <v-col cols="6">
+                        <v-text-field
+                        v-model.number="arpGateLength"
+                        label="Gate"
+                        suffix="%"
+                        type="number"
+                        min="10"
+                        max="100"
+                        density="compact"
+                        hide-details
+                        ></v-text-field>
+                    </v-col>
+                </v-row>
+
+                <v-row class="mb-2">
+                    <v-col cols="12">
+                        <v-btn
+                        @click="toggleArpeggiator"
+                        block
+                        :color="arpActive ? 'primary' : ''"
+                        >
+                            <v-icon>{{ arpActive ? 'mdi-stop' : 'mdi-play' }}</v-icon>
+                            {{ arpActive ? 'ARP ON' : 'ARP OFF' }}
+                        </v-btn>
+                    </v-col>
+                </v-row>
+
+                <v-row class="mb-1">
+                    <v-col cols="12">
+                        <div class="sequencer-status">
+                            <p class="text-caption ma-0">Held Notes: {{ arpHeldNotes }}</p>
+                        </div>
+                    </v-col>
+                </v-row>
+
+            </div>
+
+            <div
+            class="container-controls mt-5"
+            >
                 <v-row>
                     <v-select
                     v-model="selectedScaleType"
@@ -239,6 +322,31 @@
             </div>
 
             <div
+            class="container-controls mt-5 pb-5"
+            >
+
+                <div
+                class="container-controls mx-4 pa-1"
+                >
+                    <p class="pa-0 ma-0 text-h5 text-center"
+                    v-text="note"
+                    ></p>
+                </div>
+
+                <div class="mt-4">
+
+                    <p
+                    v-for="(note, index) in noteHistory"
+                    :key="index"
+                    v-text="note"
+                    class="pa-0 ma-0 text-h7"
+                    ></p>
+
+                </div>
+
+            </div>
+
+            <div
             class="container-controls mt-5"
             >
                 <v-row class="mb-2">
@@ -344,31 +452,6 @@
 
             </div>
 
-            <div
-            class="container-controls mt-5 pb-5"
-            >
-
-                <div
-                class="container-controls mx-4 pa-1"
-                >
-                    <p class="pa-0 ma-0 text-h5 text-center"
-                    v-text="note"
-                    ></p>
-                </div>
-
-                <div class="mt-4">
-
-                    <p
-                    v-for="(note, index) in noteHistory"
-                    :key="index"
-                    v-text="note"
-                    class="pa-0 ma-0 text-h7"
-                    ></p>
-
-                </div>
-
-            </div>
-
         </div>
 
     </div>
@@ -433,7 +516,30 @@ export default {
                 { label: '1/8 Note', value: '1/8' },
                 { label: '1/16 Note', value: '1/16' },
                 { label: '1/32 Note', value: '1/32' },
-            ]
+            ],
+            // Arpeggiator data
+            arpActive: false,
+            arpMode: 'up',
+            arpModeOptions: [
+                { label: 'Up', value: 'up' },
+                { label: 'Down', value: 'down' },
+                { label: 'Up/Down', value: 'updown' },
+                { label: 'Down/Up', value: 'downup' },
+                { label: 'Random', value: 'random' },
+                { label: 'As Played', value: 'asplayed' },
+            ],
+            arpRate: '1/16',
+            arpRateOptions: [
+                { label: '1/4 Note', value: '1/4' },
+                { label: '1/8 Note', value: '1/8' },
+                { label: '1/16 Note', value: '1/16' },
+                { label: '1/32 Note', value: '1/32' },
+                { label: '1/8 Triplet', value: '1/8t' },
+                { label: '1/16 Triplet', value: '1/16t' },
+            ],
+            arpOctaves: 1,
+            arpGateLength: 80,
+            arpHeldNotes: 0
         }
     },
 
@@ -707,6 +813,62 @@ export default {
 
         updateEventCount() {
             this.recordedEventsCount = this.controller.sequencer.recordedEvents.length;
+        },
+
+        // Arpeggiator methods
+        toggleArpeggiator() {
+            this.arpActive = !this.arpActive;
+            
+            if (this.arpActive) {
+                console.log('Arpeggiator ON');
+                this.controller.arpeggiator.start({
+                    mode: this.arpMode,
+                    rate: this.arpRate,
+                    octaves: this.arpOctaves,
+                    gateLength: this.arpGateLength,
+                    tempo: this.tempo
+                });
+            } else {
+                console.log('Arpeggiator OFF');
+                this.controller.arpeggiator.stop();
+                this.arpHeldNotes = 0;
+            }
+        },
+
+        updateArpHeldNotes(count) {
+            this.arpHeldNotes = count;
+        }
+    },
+
+    watch: {
+        arpMode(newMode) {
+            if (this.arpActive) {
+                this.controller.arpeggiator.setMode(newMode);
+            }
+        },
+
+        arpRate(newRate) {
+            if (this.arpActive) {
+                this.controller.arpeggiator.setRate(newRate, this.tempo);
+            }
+        },
+
+        arpOctaves(newOctaves) {
+            if (this.arpActive) {
+                this.controller.arpeggiator.setOctaves(newOctaves);
+            }
+        },
+
+        arpGateLength(newGate) {
+            if (this.arpActive) {
+                this.controller.arpeggiator.setGateLength(newGate);
+            }
+        },
+
+        tempo(newTempo) {
+            if (this.arpActive) {
+                this.controller.arpeggiator.setRate(this.arpRate, newTempo);
+            }
         }
     },
 

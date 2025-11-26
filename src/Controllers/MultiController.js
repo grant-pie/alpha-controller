@@ -12,11 +12,13 @@ import { SysExMessage } from '../Models/SysExMessage.js';
 import { DigitalInput } from '../Models/DigitalInput.js';
 import { DigitalOutput } from '../Models/DigitalOutput.js';
 import { MIDISequencer } from '../Models/MIDISequencer.js';
+import { Arpeggiator } from '../Models/Arpeggiator.js';
 
 class MultiController extends Controller {
     constructor(hardwareInterface, midiInterface){
         super(hardwareInterface, midiInterface);
         this.sequencer = new MIDISequencer(midiInterface, 120);
+        this.arpeggiator = new Arpeggiator(midiInterface, 120);
         this.state = this.initiate();
     }
 
@@ -194,30 +196,40 @@ class MultiController extends Controller {
         const controller = midiRouter.controller;
         const velocityReceived = event.detail.velocity;
         const midiValReceived = event.detail.note;
-        const btn = DigitalInput.findDigitalInputByMIDIValue(ohmRGB.digital_inputs_table,  midiValReceived);
+        const btn = DigitalInput.findDigitalInputByMIDIValue(ohmRGB.digital_inputs_table, midiValReceived);
 
         const digitalOutputId = DigitalOutput.findDigitalOutputByDigitalInputId(ohmRGB.digital_outputs_table, btn.id);
         const digitalOutput = ohmRGB.digital_outputs_table[digitalOutputId];
 
+        // Route to arpeggiator if active (ADD THIS BLOCK)
+        if (controller.arpeggiator.isActive) {
+            if (velocityReceived > 0) {
+                controller.arpeggiator.addNote(midiValReceived);
+            } else {
+                controller.arpeggiator.removeNote(midiValReceived);
+            }
+            // Don't return - still update LEDs below
+        }
+
+        // Record if sequencer is recording
         if (controller.sequencer.isRecording) {
             const eventType = velocityReceived > 0 ? 'noteOn' : 'noteOff';
             controller.sequencer.recordEvent(midiValReceived, velocityReceived, eventType);
         }
 
+        // Update LEDs
         btn.toggled = 1;
         if(velocityReceived > 0) {
             digitalOutput.r.value = 1;
             digitalOutput.g.value = 1;
             digitalOutput.b.value = 1;
-
         } else {
             digitalOutput.r.value = digitalOutput.r.defaultValue;
             digitalOutput.g.value = digitalOutput.g.defaultValue;
             digitalOutput.b.value = digitalOutput.b.defaultValue;
-
         }
+        
         const sysExMessage = ohmRGB.getLEDsSysExMessage();
-
         midiInterface.outputDevice.send(sysExMessage.sysExMessage);
     }
 
@@ -675,7 +687,7 @@ class MultiController extends Controller {
 
         return inputs.sort((a, b) => (this.MIDIToNote(a.MIDI_value).octave > this.MIDIToNote(b.MIDI_value).octave) ? 1 : -1);
     }
-
+    
     setSequencerTempo(bpm) {
         this.sequencer.setTempo(bpm);
     }
