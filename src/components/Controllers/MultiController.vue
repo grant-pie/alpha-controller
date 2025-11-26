@@ -239,31 +239,6 @@
             </div>
 
             <div
-            class="container-controls mt-5 pb-5"
-            >
-
-                <div
-                class="container-controls mx-4 pa-1"
-                >
-                    <p class="pa-0 ma-0 text-h5 text-center"
-                    v-text="note"
-                    ></p>
-                </div>
-
-                <div class="mt-4">
-
-                    <p
-                    v-for="(note, index) in noteHistory"
-                    :key="index"
-                    v-text="note"
-                    class="pa-0 ma-0 text-h7"
-                    ></p>
-
-                </div>
-
-            </div>
-
-            <div
             class="container-controls mt-5"
             >
                 <v-row class="mb-2">
@@ -366,6 +341,31 @@
                         </div>
                     </v-col>
                 </v-row>
+
+            </div>
+
+            <div
+            class="container-controls mt-5 pb-5"
+            >
+
+                <div
+                class="container-controls mx-4 pa-1"
+                >
+                    <p class="pa-0 ma-0 text-h5 text-center"
+                    v-text="note"
+                    ></p>
+                </div>
+
+                <div class="mt-4">
+
+                    <p
+                    v-for="(note, index) in noteHistory"
+                    :key="index"
+                    v-text="note"
+                    class="pa-0 ma-0 text-h7"
+                    ></p>
+
+                </div>
 
             </div>
 
