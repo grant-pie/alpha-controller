@@ -12,6 +12,42 @@
             class="container-controls"
             >
                 <v-row>
+                    <v-select
+                    v-model="selectedChordType"
+                    :items="chordTypes"
+                    item-title="label"
+                    item-value="value"
+                    label="Chord Type"
+                    density="compact"
+                    :disabled="selected === null"
+                    ></v-select>
+                </v-row>
+
+                <v-row class="mt-2">
+                    <v-btn
+                    @click="showChord"
+                    block
+                    :disabled="selected === null || selectedChordType === null"
+                    >
+                        Show Chord
+                    </v-btn>
+                </v-row>
+
+                <v-row class="mt-2 mb-1">
+                    <v-btn
+                    @click="hideChord"
+                    block
+                    :disabled="selected === null"
+                    >
+                        Hide Chord
+                    </v-btn>
+                </v-row>
+            </div>
+
+            <div
+            class="container-controls mt-5"
+            >
+                <v-row>
 
                     <v-btn
                     @click="showMajorScale"
@@ -249,11 +285,24 @@ export default {
             showBlackKeys : false,
             showMajorScaleActive: false,
             showMinorScaleActive: false,
+            showChordActive: false,
             scaleRoot: null,
             transposeAmount: 0,
             selected: null,
             noteIn: null,
             noteHistory : ['1', '2', '3', '4', '5', '6', '7', '8', '9', '10',  '11',  '12' ],
+            selectedChordType: null,
+            chordTypes: [
+                { label: 'Major', value: 'major' },
+                { label: 'Minor', value: 'minor' },
+                { label: 'Diminished', value: 'diminished' },
+                { label: 'Augmented', value: 'augmented' },
+                { label: 'Major 7th', value: 'major7' },
+                { label: 'Minor 7th', value: 'minor7' },
+                { label: 'Dominant 7th', value: 'dominant7' },
+                { label: 'Sus2', value: 'sus2' },
+                { label: 'Sus4', value: 'sus4' },
+            ]
         }
     },
 
@@ -292,8 +341,9 @@ export default {
 
             if(this.showMiddleC){
 
-                if(this.showMajorScaleActive || this.showMinorScaleActive){
+                if(this.showMajorScaleActive || this.showMinorScaleActive || this.showChordActive){
                     this.hideScale();
+                    this.hideChord();
                 }
 
                 return this.controller.showMiddleC();
@@ -304,8 +354,9 @@ export default {
 
         showOctaves(){
             if(this.showOctaves){
-                if(this.showMajorScaleActive || this.showMinorScaleActive){
+                if(this.showMajorScaleActive || this.showMinorScaleActive || this.showChordActive){
                     this.hideScale();
+                    this.hideChord();
                 }
 
                 this.controller.showOctaves();
@@ -317,8 +368,9 @@ export default {
         showBlackKeys(){
 
             if(this.showBlackKeys){
-                if(this.showMajorScaleActive || this.showMinorScaleActive){
+                if(this.showMajorScaleActive || this.showMinorScaleActive || this.showChordActive){
                     this.hideScale();
+                    this.hideChord();
                 }
 
                 this.controller.showBlackKeys();
@@ -342,6 +394,10 @@ export default {
 
             if(this.showMajorScaleActive || this.showMinorScaleActive){
                 this.hideScales
+            }
+
+            if(this.showChordActive){
+                this.hideChord();
             }
 
             if(this.showMiddleC){
@@ -405,9 +461,39 @@ export default {
                 this.showMinorScale()
             }
 
+            if(this.showChordActive){
+                this.showChord()
+            }
+
 
         },
 
+        showChord(){
+            // Turn off other visualizations
+            if(this.showMiddleC){
+                this.showMiddleC = false;
+            }
+
+            if(this.showOctaves){
+               this.showOctaves = false;
+            }
+
+            if(this.showBlackKeys){
+               this.showBlackKeys = false;
+            }
+
+            if(this.showMajorScaleActive || this.showMinorScaleActive){
+                this.hideScale();
+            }
+
+            this.showChordActive = true;
+            this.controller.showChord(this.selected, this.selectedChordType);
+        },
+
+        hideChord(){
+            this.showChordActive = false;
+            this.controller.hideChord();
+        },
 
         showMajorScale(){
             //TODO: Alot of confusing switching on and off needs fix
@@ -421,6 +507,10 @@ export default {
 
             if(this.showBlackKeys){
                this.showBlackKeys = false;
+            }
+
+            if(this.showChordActive){
+                this.hideChord();
             }
 
             this.showMajorScaleActive = true;
@@ -439,6 +529,10 @@ export default {
 
             if(this.showBlackKeys){
                this.showBlackKeys = false;
+            }
+
+            if(this.showChordActive){
+                this.hideChord();
             }
 
             this.showMinorScaleActive = true;

@@ -534,6 +534,86 @@ class MultiController extends Controller {
         this.midiInterface.outputDevice.send(sysExMessage.sysExMessage);
     }
 
+    // Add these methods after your hideScales() method in MultiController.js
+
+    showChord(root, chordType) {
+        console.log('showChord called with root:', root, 'chordType:', chordType);
+        
+        // Define chord intervals (semitones from root)
+        const chordIntervals = {
+            'major': [0, 4, 7],           // Root, Major 3rd, Perfect 5th
+            'minor': [0, 3, 7],           // Root, Minor 3rd, Perfect 5th
+            'diminished': [0, 3, 6],      // Root, Minor 3rd, Diminished 5th
+            'augmented': [0, 4, 8],       // Root, Major 3rd, Augmented 5th
+            'major7': [0, 4, 7, 11],      // Root, Major 3rd, Perfect 5th, Major 7th
+            'minor7': [0, 3, 7, 10],      // Root, Minor 3rd, Perfect 5th, Minor 7th
+            'dominant7': [0, 4, 7, 10],   // Root, Major 3rd, Perfect 5th, Minor 7th
+            'sus2': [0, 2, 7],            // Root, Major 2nd, Perfect 5th
+            'sus4': [0, 5, 7]             // Root, Perfect 4th, Perfect 5th
+        };
+
+        // Hide previous chord
+        this.hideChord();
+
+        // Get the intervals for the selected chord type
+        const intervals = chordIntervals[chordType];
+        if (!intervals) {
+            console.error('Unknown chord type:', chordType);
+            return;
+        }
+
+        // Get all grid buttons
+        const gridButtons = this.hardwareInterface.getDigitalInputsByGroup('grid');
+        
+        // Create a map of MIDI values to buttons for quick lookup
+        const midiToButtonMap = {};
+        gridButtons.forEach(btn => {
+            midiToButtonMap[btn.MIDI_value] = btn;
+        });
+
+        // Get root MIDI value
+        const rootMidiValue = root.MIDI_value;
+        const rootNote = this.MIDIToNote(rootMidiValue);
+        console.log('Root MIDI value:', rootMidiValue, 'Note:', rootNote.note + rootNote.octave);
+        console.log('Chord intervals:', intervals);
+
+        // Light up each note in the chord
+        intervals.forEach((interval, index) => {
+            const chordNoteMidi = rootMidiValue + interval;
+            
+            console.log(`Chord note ${index}: interval=${interval}, MIDI=${chordNoteMidi}`);
+
+            // Check if this MIDI note exists on the grid
+            if (midiToButtonMap[chordNoteMidi] != undefined) {
+                const button = midiToButtonMap[chordNoteMidi];
+                const note = this.MIDIToNote(chordNoteMidi);
+                
+                console.log(`  Lighting up: id=${button.id}, midi=${chordNoteMidi}, note=${note.note}${note.octave}`);
+                
+                // Use blue color for chord notes
+                this.hardwareInterface.getDigitalOutputById(button.id).b.value = 1;
+                this.hardwareInterface.getDigitalOutputById(button.id).b.defaultValue = 1;
+            } else {
+                console.log(`  MIDI note ${chordNoteMidi} not available on grid`);
+            }
+        });
+
+        const sysExMessage = this.hardwareInterface.getLEDsSysExMessage();
+        this.midiInterface.outputDevice.send(sysExMessage.sysExMessage);
+    }
+
+    hideChord(){
+        const gridLeds = this.hardwareInterface.getDigitalOutputsByGroup('grid');
+
+        for(let i = 0; i <= gridLeds.length - 1; i++){
+            gridLeds[i].b.value = 0;
+            gridLeds[i].b.defaultValue = 0;
+        }
+
+        const sysExMessage = this.hardwareInterface.getLEDsSysExMessage();
+        this.midiInterface.outputDevice.send(sysExMessage.sysExMessage);
+    }
+
     getInputsByOctave(octave){
         let result = this.hardwareInterface.getDigitalInputsByGroup('grid').filter(obj => {
             return this.MIDIToNote(obj.MIDI_value).octave === octave
