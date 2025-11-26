@@ -36,8 +36,25 @@
                         v-model="selectedMidiOutputDevice"
                         :items="midiOutputDevicesTitles"
                         item-text="name"
-                        label="MIDI Output Devices"
+                        label="MIDI Output (Controller)"
                         return-object
+                        ></v-select>
+
+                    </v-col>
+
+                    <v-col
+                    cols="2"
+                    >
+
+                        <v-select
+                        dense
+                        v-model="selectedSequencerOutputDevice"
+                        :items="midiOutputDevicesTitles"
+                        item-text="name"
+                        label="MIDI Output (Sequencer)"
+                        return-object
+                        hint="Use virtual loopback or synth"
+                        persistent-hint
                         ></v-select>
 
                     </v-col>
@@ -93,6 +110,7 @@ export default {
             hardwareInterface: null,
             selectedMidiInputDevice: null,
             selectedMidiOutputDevice: null,
+            selectedSequencerOutputDevice: null,
             debugMode : true,
 
         }
@@ -122,7 +140,28 @@ export default {
             console.log({
                 'midiInterface.outputDevice' : this.midiInterface.outputDevice
             }); 
-            this.init();
+            
+            // Only init if both main output and sequencer output are selected
+            if (this.selectedSequencerOutputDevice) {
+                this.init();
+            }
+        },
+        
+        selectedSequencerOutputDevice(outputDevice) {
+            console.log({
+                'selectedSequencerOutputDevice' : outputDevice
+            });
+
+            this.midiInterface.sequencerOutputDevice = this.midiOutputDevices.find( device => device.name === outputDevice );
+
+            console.log({
+                'midiInterface.sequencerOutputDevice' : this.midiInterface.sequencerOutputDevice
+            }); 
+            
+            // Only init if both main output and sequencer output are selected
+            if (this.selectedMidiOutputDevice) {
+                this.init();
+            }
         },
     },
 
@@ -137,7 +176,12 @@ export default {
             console.log({
                 'init-complete' : {
                     'hardwareInterface' : this.hardwareInterface,
-                    'controller' : this.controller
+                    'controller' : this.controller,
+                    'midiInterface': {
+                        'input': this.midiInterface.inputDevice?.name,
+                        'output': this.midiInterface.outputDevice?.name,
+                        'sequencerOutput': this.midiInterface.sequencerOutputDevice?.name
+                    }
                 }
             });
         }

@@ -8,14 +8,15 @@ rename alphasynth to multicontroller where applicable
 
 import {MIDIRouter} from '../Static/MIDIRouter.js';
 import {Controller} from './Controller.js';
-import { SysExMessage } from '../models/SysExMessage.js';
-import { DigitalInput } from '../models/DigitalInput.js';
-
-import { DigitalOutput } from '../models/DigitalOutput.js';
+import { SysExMessage } from '../Models/SysExMessage.js';
+import { DigitalInput } from '../Models/DigitalInput.js';
+import { DigitalOutput } from '../Models/DigitalOutput.js';
+import { MIDISequencer } from '../Models/MIDISequencer.js';
 
 class MultiController extends Controller {
     constructor(hardwareInterface, midiInterface){
         super(hardwareInterface, midiInterface);
+        this.sequencer = new MIDISequencer(midiInterface, 120);
         this.state = this.initiate();
     }
 
@@ -190,12 +191,18 @@ class MultiController extends Controller {
         const midiRouter = event.detail.midiRouter;
         const ohmRGB = midiRouter.hardware_interface;
         const midiInterface = midiRouter.midi_interface;
+        const controller = midiRouter.controller;
         const velocityReceived = event.detail.velocity;
         const midiValReceived = event.detail.note;
         const btn = DigitalInput.findDigitalInputByMIDIValue(ohmRGB.digital_inputs_table,  midiValReceived);
 
         const digitalOutputId = DigitalOutput.findDigitalOutputByDigitalInputId(ohmRGB.digital_outputs_table, btn.id);
         const digitalOutput = ohmRGB.digital_outputs_table[digitalOutputId];
+
+        if (controller.sequencer.isRecording) {
+            const eventType = velocityReceived > 0 ? 'noteOn' : 'noteOff';
+            controller.sequencer.recordEvent(midiValReceived, velocityReceived, eventType);
+        }
 
         btn.toggled = 1;
         if(velocityReceived > 0) {
@@ -667,6 +674,18 @@ class MultiController extends Controller {
     sortInputsByOctaves(inputs){
 
         return inputs.sort((a, b) => (this.MIDIToNote(a.MIDI_value).octave > this.MIDIToNote(b.MIDI_value).octave) ? 1 : -1);
+    }
+
+    setSequencerTempo(bpm) {
+        this.sequencer.setTempo(bpm);
+    }
+
+    getSequencerStats() {
+        return {
+            eventCount: this.sequencer.recordedEvents.length,
+            duration: this.sequencer.getRecordingDuration(),
+            durationInBars: this.sequencer.getRecordingDurationInBars().toFixed(2)
+        };
     }
 
 }

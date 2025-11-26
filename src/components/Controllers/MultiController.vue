@@ -238,6 +238,110 @@
 
             </div>
 
+                        <div
+            class="container-controls mt-5"
+            >
+                <v-row class="mb-2">
+                    <v-col cols="12">
+                        <p class="text-center font-weight-bold mb-0">SEQUENCER</p>
+                    </v-col>
+                </v-row>
+
+                <v-row class="mb-3">
+                    <v-col cols="6">
+                        <v-text-field
+                        v-model.number="tempo"
+                        label="Tempo"
+                        suffix="BPM"
+                        type="number"
+                        density="compact"
+                        hide-details
+                        ></v-text-field>
+                    </v-col>
+                    <v-col cols="6">
+                        <v-text-field
+                        v-model.number="loopLength"
+                        label="Length"
+                        suffix="bars"
+                        type="number"
+                        density="compact"
+                        hide-details
+                        ></v-text-field>
+                    </v-col>
+                </v-row>
+
+                <v-row class="mb-2">
+                    <v-col cols="4" class="pa-1">
+                        <v-btn
+                        @click="startRecording"
+                        block
+                        :color="isRecording ? 'red' : ''"
+                        :disabled="isPlaying"
+                        size="small"
+                        >
+                            <v-icon size="small">mdi-record</v-icon>
+                            REC
+                        </v-btn>
+                    </v-col>
+                    <v-col cols="4" class="pa-1">
+                        <v-btn
+                        @click="startPlayback"
+                        block
+                        :color="isPlaying ? 'green' : ''"
+                        :disabled="isRecording"
+                        size="small"
+                        >
+                            <v-icon size="small">mdi-play</v-icon>
+                            PLAY
+                        </v-btn>
+                    </v-col>
+                    <v-col cols="4" class="pa-1">
+                        <v-btn
+                        @click="stopSequencer"
+                        block
+                        size="small"
+                        >
+                            <v-icon size="small">mdi-stop</v-icon>
+                            STOP
+                        </v-btn>
+                    </v-col>
+                </v-row>
+
+                <v-row class="mb-2">
+                    <v-col cols="6" class="pa-1">
+                        <v-btn
+                        @click="loopEnabled = !loopEnabled"
+                        block
+                        :color="loopEnabled ? 'primary' : ''"
+                        size="small"
+                        >
+                            <v-icon size="small">mdi-repeat</v-icon>
+                            LOOP
+                        </v-btn>
+                    </v-col>
+                    <v-col cols="6" class="pa-1">
+                        <v-btn
+                        @click="clearRecording"
+                        block
+                        size="small"
+                        >
+                            <v-icon size="small">mdi-delete</v-icon>
+                            CLEAR
+                        </v-btn>
+                    </v-col>
+                </v-row>
+
+                <v-row class="mb-1">
+                    <v-col cols="12">
+                        <div class="sequencer-status">
+                            <p class="text-caption ma-0">Status: {{ sequencerStatus }}</p>
+                            <p class="text-caption ma-0">Events: {{ recordedEventsCount }}</p>
+                        </div>
+                    </v-col>
+                </v-row>
+
+            </div>
+
             <div
             class="container-controls mt-5 pb-5"
             >
@@ -262,6 +366,8 @@
                 </div>
 
             </div>
+
+
 
         </div>
 
@@ -312,7 +418,14 @@ export default {
                 { label: 'Pentatonic Major', value: 'pentatonicMajor' },
                 { label: 'Pentatonic Minor', value: 'pentatonicMinor' },
                 { label: 'Blues', value: 'blues' },
-            ]
+            ],
+            // Sequencer data
+            tempo: 120,
+            loopLength: 4,
+            isRecording: false,
+            isPlaying: false,
+            loopEnabled: true,
+            recordedEventsCount: 0
         }
     },
 
@@ -344,6 +457,12 @@ export default {
             const note = notes[this.noteIn - 12 * (octave + 1)];
             return note + ' ' + octave;
         },
+
+        sequencerStatus() {
+            if (this.isRecording) return 'Recording...';
+            if (this.isPlaying) return 'Playing';
+            return 'Stopped';
+        }
     },
 
     watch: {
@@ -527,6 +646,48 @@ export default {
             this.showScaleActive = false;
             this.controller.hideScales();
         },
+
+        // Sequencer methods
+        startRecording() {
+            console.log('Start recording');
+            this.isRecording = true;
+            this.isPlaying = false;
+            this.controller.sequencer.startRecording();
+        },
+
+        startPlayback() {
+            console.log('Start playback');
+            this.isPlaying = true;
+            this.isRecording = false;
+            this.controller.sequencer.startPlayback(this.loopEnabled);
+        },
+
+        stopSequencer() {
+            console.log('Stop sequencer');
+            this.isRecording = false;
+            this.isPlaying = false;
+            
+            if (this.controller.sequencer.isRecording) {
+                this.controller.sequencer.stopRecording();
+            }
+            
+            if (this.controller.sequencer.isPlaying) {
+                this.controller.sequencer.stopPlayback();
+            }
+            
+            this.updateEventCount();
+        },
+
+        clearRecording() {
+            console.log('Clear recording');
+            this.stopSequencer();
+            this.controller.sequencer.clearRecording();
+            this.recordedEventsCount = 0;
+        },
+
+        updateEventCount() {
+            this.recordedEventsCount = this.controller.sequencer.recordedEvents.length;
+        }
     },
 
     components: {
@@ -593,5 +754,12 @@ export default {
 
     .border-none{
         border: none !important;
+    }
+
+    .sequencer-status {
+        background-color: rgba(184, 184, 184, 0.1);
+        padding: 8px;
+        border-radius: 4px;
+        text-align: center;
     }
 </style>

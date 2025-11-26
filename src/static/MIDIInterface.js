@@ -1,9 +1,10 @@
 console.log('loaded');
 
 class MIDIInterface {
-    constructor(inputDevice, outputDevice) {
+    constructor(inputDevice, outputDevice, sequencerOutputDevice = null) {
         this.inputDevice = inputDevice;
         this.outputDevice = outputDevice;
+        this.sequencerOutputDevice = sequencerOutputDevice || outputDevice;
     };
 
     onMIDISuccess(midiAccess) {

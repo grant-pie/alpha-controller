@@ -63,4 +63,9 @@ export default defineConfig({
   server: {
     port: 3000,
   },
+  // Web Worker configuration
+  worker: {
+    format: 'es', // Use ES module format for workers
+    plugins: () => [], // Workers don't need the same plugins as main app
+  },
 })
