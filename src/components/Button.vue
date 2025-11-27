@@ -61,19 +61,6 @@ export default{
         }
     },
 
-    watch: {
-        output: {
-            deep: true,
-            handler() {
-                if(this.input.group === 'grid'){
-                    if(this.output.r.value && this.output.b.value){
-                        this.$emit('update:noteIn', this.input.MIDI_value);
-                    }
-                }
-            }
-        },
-    },
-
     computed : {
         computedSize() {
             if(this.size === 'small'){

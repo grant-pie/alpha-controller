@@ -134,11 +134,6 @@ export default {
     },
 
     watch : {
-        noteIn(){
-            this.$emit('update:noteIn', this.noteIn);
-        },
-
-
         selected(){
  
             this.$emit('update:selected', this.selected);

@@ -680,59 +680,19 @@ export default {
         }
     },
 
-    watch: {
-        showMiddleC(){
-
-            if(this.showMiddleC){
-
-                if(this.showScaleActive || this.showChordActive){
-                    this.hideScale();
-                    this.hideChord();
-                }
-
-                return this.controller.showMiddleC();
-            }
-
-            return this.controller.hideMiddleC();
-        },
-
-        showOctaves(){
-            if(this.showOctaves){
-                if(this.showScaleActive || this.showChordActive){
-                    this.hideScale();
-                    this.hideChord();
-                }
-
-                this.controller.showOctaves();
-            } else {
-                 this.controller.hideOctaves();
-            }
-        },
-
-        showBlackKeys(){
-
-            if(this.showBlackKeys){
-                if(this.showScaleActive || this.showChordActive){
-                    this.hideScale();
-                    this.hideChord();
-                }
-
-                this.controller.showBlackKeys();
-            } else {
-                 this.controller.hideBlackKeys();
-            }
-        },
-
-        noteIn(){
-            console.log('*******************updating note history*****************');
-            if(this.noteIn != ''){
-                this.noteHistory.pop();
-                this.noteHistory.unshift(this.note);
-            }
-        },
+    mounted() {
+        window.addEventListener('midiNoteOn', this.handleMidiNote);
     },
 
+    beforeUnmount() {
+        window.removeEventListener('midiNoteOn', this.handleMidiNote);
+    },
+    
     methods: {
+        handleMidiNote(event) {
+            this.noteIn = event.detail.note;
+        },
+
         transpose(direction){
             let refreshNotes = false;
 
@@ -964,6 +924,65 @@ export default {
     },
 
     watch: {
+        showMiddleC(){
+
+            if(this.showMiddleC){
+
+                if(this.showScaleActive || this.showChordActive){
+                    this.hideScale();
+                    this.hideChord();
+                }
+
+                return this.controller.showMiddleC();
+            }
+
+            return this.controller.hideMiddleC();
+        },
+
+        showOctaves(){
+            if(this.showOctaves){
+                if(this.showScaleActive || this.showChordActive){
+                    this.hideScale();
+                    this.hideChord();
+                }
+
+                this.controller.showOctaves();
+            } else {
+                 this.controller.hideOctaves();
+            }
+        },
+
+        showBlackKeys(){
+
+            if(this.showBlackKeys){
+                if(this.showScaleActive || this.showChordActive){
+                    this.hideScale();
+                    this.hideChord();
+                }
+
+                this.controller.showBlackKeys();
+            } else {
+                 this.controller.hideBlackKeys();
+            }
+        },
+
+        noteIn(newVal, oldVal){
+            console.log('************ MultiController noteIn watcher triggered ************');
+            console.log('oldVal:', oldVal);
+            console.log('newVal:', newVal);
+            console.log('this.note computed:', this.note);
+            console.log('Current noteHistory:', this.noteHistory);
+            
+            if(newVal !== null && newVal !== undefined && newVal !== ''){
+                console.log('Condition passed - updating history');
+                this.noteHistory.pop();
+                this.noteHistory.unshift(this.note);
+                console.log('Updated noteHistory:', this.noteHistory);
+            } else {
+                console.log('Condition FAILED - not updating');
+            }
+        },
+        
         arpMode(newMode) {
             if (this.arpActive) {
                 this.controller.arpeggiator.setMode(newMode);

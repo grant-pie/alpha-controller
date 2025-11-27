@@ -202,7 +202,13 @@ class MultiController extends Controller {
 
         const digitalOutputId = DigitalOutput.findDigitalOutputByDigitalInputId(ohmRGB.digital_outputs_table, btn.id);
         const digitalOutput = ohmRGB.digital_outputs_table[digitalOutputId];
-
+        
+        // Emit custom event for Vue to catch
+        if (velocityReceived > 0) {
+            window.dispatchEvent(new CustomEvent('midiNoteOn', { 
+                detail: { note: midiValReceived } 
+            }));
+        }
         // Route to chord generator if active (ADD THIS BLOCK)
         if (controller.chordGenerator.isActive) {
             if (velocityReceived > 0) {
