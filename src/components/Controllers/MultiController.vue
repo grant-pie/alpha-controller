@@ -7,43 +7,10 @@
 
         <div
         class="container-btns"
-        >
-            <div
-            class="container-controls"
-            >
-                <v-row>
-                    <v-select
-                    v-model="selectedChordType"
-                    :items="chordTypes"
-                    item-title="label"
-                    item-value="value"
-                    label="Chord Type"
-                    density="compact"
-                    :disabled="selected === null"
-                    ></v-select>
-                </v-row>
+        >   
+            
 
-                <v-row class="mt-2">
-                    <v-btn
-                    @click="showChord"
-                    block
-                    :disabled="selected === null || selectedChordType === null"
-                    >
-                        Show Chord
-                    </v-btn>
-                </v-row>
-
-                <v-row class="mt-2 mb-1">
-                    <v-btn
-                    @click="hideChord"
-                    block
-                    :disabled="selected === null"
-                    >
-                        Hide Chord
-                    </v-btn>
-                </v-row>
-            </div>
-
+            <!--Chord generator-->
             <div
             class="container-controls mt-5"
             >
@@ -115,7 +82,9 @@
                 </v-row>
 
             </div>
+            <!--Chord generator end-->
 
+            <!--Arpeggiator-->
             <div
             class="container-controls mt-5"
             >
@@ -198,120 +167,8 @@
                 </v-row>
 
             </div>
+            <!--Arpeggiator end-->
 
-            <div
-            class="container-controls mt-5"
-            >
-                <v-row>
-                    <v-select
-                    v-model="selectedScaleType"
-                    :items="scaleTypes"
-                    item-title="label"
-                    item-value="value"
-                    label="Scale Type"
-                    density="compact"
-                    :disabled="selected === null"
-                    ></v-select>
-                </v-row>
-
-                <v-row class="mt-2">
-                    <v-btn
-                    @click="showScale"
-                    block
-                    :disabled="selected === null || selectedScaleType === null"
-                    >
-                        Show Scale
-                    </v-btn>
-                </v-row>
-
-                <v-row class="mt-2 mb-1">
-                    <v-btn
-                    @click="hideScale"
-                    block
-                    :disabled="selected === null"
-                    >
-                        Hide Scale
-                    </v-btn>
-                </v-row>
-
-            </div>
-
-            <div
-            class="container-controls mt-5"
-            >
-
-                <v-row
-                class="justify-center mb-2"
-                >
-
-                    <v-btn
-                    @click="showMiddleC = !showMiddleC"
-                    block
-                    >
-                        Show Middle C
-                    </v-btn>
-
-                </v-row>
-
-                <v-row
-                class="justify-center mb-2"
-                >
-
-                    <v-btn
-                    @click="showOctaves = !showOctaves"
-                    block
-                    >
-                        Show Octaves
-                    </v-btn>
-
-                </v-row>
-
-                <v-row
-                class="justify-center mb-2"
-                >
-
-                    <v-btn
-                    @click="showBlackKeys = !showBlackKeys"
-                    block
-                    >
-                        Show Black Keys
-                    </v-btn>
-
-                </v-row>
-
-            </div>
-
-            <div
-            class="container-controls mt-5"
-            >
-
-                <v-row
-                class="justify-center mb-2"
-                >
-
-                    <v-btn
-                    @click="labels === 'notes' ?  labels = '' : labels = 'notes'"
-                    block
-                    >
-                        Show Notes
-                    </v-btn>
-
-                </v-row>
-
-                <v-row
-                class="justify-center mb-2"
-                >
-
-                    <v-btn
-                    @click="labels === 'ids' ?  labels = '' : labels = 'ids'"
-                    block
-                    >
-                        Show IDs
-                    </v-btn>
-
-                </v-row>
-
-            </div>
 
 
         </div>
@@ -982,7 +839,7 @@ export default {
                 console.log('Condition FAILED - not updating');
             }
         },
-        
+
         arpMode(newMode) {
             if (this.arpActive) {
                 this.controller.arpeggiator.setMode(newMode);

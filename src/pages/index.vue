@@ -68,11 +68,11 @@
             class="justify-center"
             >
 
-                <multi-controller
+                <multi-controller-small
                 v-if="hardwareInterface != null"
                 :hardware_interface="hardwareInterface"
                 :controller ="controller"
-                ></multi-controller>
+                ></multi-controller-small>
 
             </v-row>
 
@@ -87,14 +87,11 @@
 <script>
 import {OhmRGB} from '../models/OhmRGB.js'
 
-//import {DefaultOhmRGB} from '../controllers/DefaultOhmRGB.js'
 import {MultiController} from '../controllers/MultiController.js'
-//import {AlphaSynth} from '../controllers/AlphaSynth.js'
 
 import {MIDIInterface} from '../Static/MIDIInterface.js'
 
-//import LividOhmRGB from '../components/Controllers/LividOhmRGB.vue'
-import MultiControllerVue from '../components/Controllers/MultiController.vue'
+import MultiControllerSmall from '../components/Controllers/MultiControllerSmall.vue'
 
 export default {
 
@@ -243,7 +240,7 @@ export default {
         }
     },
     components: {
-        'multi-controller' : MultiControllerVue
+        'multi-controller-small' : MultiControllerSmall
     }
 }
 

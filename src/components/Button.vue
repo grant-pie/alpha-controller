@@ -61,6 +61,23 @@ export default{
         }
     },
 
+    watch: {
+        output: {
+            deep: true,
+            handler(newVal, oldVal) {
+                if(this.input.group === 'grid'){
+                    // Check if LED just turned on (was off, now on)
+                    const wasOff = !oldVal || (!oldVal.r.value && !oldVal.g.value && !oldVal.b.value);
+                    const isOn = newVal.r.value || newVal.g.value || newVal.b.value;
+                    
+                    if(wasOff && isOn){
+                        this.$emit('update:noteIn', this.input.MIDI_value);
+                    }
+                }
+            }
+        },
+    },
+
     computed : {
         computedSize() {
             if(this.size === 'small'){
